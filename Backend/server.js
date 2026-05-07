@@ -57,7 +57,7 @@ app.post("/analyze", async (req, res) => {
 
         const response = await axios.post(
 
-            "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment",
+            "https://router.huggingface.co/hf-inference/models/cardiffnlp/twitter-roberta-base-sentiment"
 
             {
                 inputs: text
