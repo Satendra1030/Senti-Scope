@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentiScope — AI Sentiment Analysis</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;700&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #0a0e0c;
+      --bg2: #101611;
+      --bg3: #161d18;
+      --card: #1a231c;
+      --border: rgba(255, 255, 255, .08);
+      --border2: rgba(255, 255, 255, .14);
+
+      --text: #f5f5f0;
+      --text2: #91a093;
+      --text3: #536457;
+
+      --green: #4ade80;
+      --green2: #22c55e;
+      --green3: #16a34a;
+
+      --red: #f87171;
+      --amber: #fbbf24;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .05;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, .08) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb1 {
+      width: 600px;
+      height: 600px;
+      background: rgba(34, 197, 94, .08);
+      top: -200px;
+      right: -100px;
+    }
+
+    .orb2 {
+      width: 500px;
+      height: 500px;
+      background: rgba(96, 165, 250, .06);
+      left: -150px;
+      bottom: 0;
+    }
+
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 110px 5vw;
+    }
+
+    .container {
+      width: min(1200px, 100%);
+      margin: auto;
+    }
+
+    /* NAV */
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+
+      height: 72px;
+      padding: 0 5vw;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      backdrop-filter: blur(16px);
+      background: rgba(10, 14, 12, .72);
+
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      text-decoration: none;
+      color: var(--text);
+      font-family: "Instrument Serif", serif;
+      font-size: 26px;
+    }
+
+    .nav-logo em {
+      color: var(--green);
+      font-style: normal;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text2);
+      font-size: 14px;
+      transition: .25s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      background: var(--green3);
+      color: #fff !important;
+      font-weight: 500;
+    }
+
+    .nav-btn:hover {
+      background: var(--green2);
+    }
+
+    /* HERO */
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding-top: 100px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 8px 18px;
+
+      border-radius: 999px;
+      border: 1px solid rgba(74, 222, 128, .25);
+
+      background: rgba(74, 222, 128, .06);
+      color: var(--green);
+
+      font-size: 12px;
+      margin-bottom: 28px;
+    }
+
+    .badge span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(.7);
+        opacity: .5;
+      }
+    }
+
+    .hero h1 {
+      font-family: "Instrument Serif", serif;
+      font-size: clamp(52px, 8vw, 110px);
+      line-height: .95;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 em {
+      color: var(--green);
+      font-style: italic;
+    }
+
+    .hero p {
+      max-width: 720px;
+      margin: auto;
+      color: var(--text2);
+      font-size: clamp(16px, 2vw, 20px);
+    }
+
+    .hero-actions {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .btn {
+      border: none;
+      outline: none;
+      cursor: pointer;
+
+      padding: 14px 28px;
+      border-radius: 12px;
+
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+
+      transition: .25s;
+    }
+
+    .btn-primary {
+      background: var(--green3);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      background: var(--green2);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text2);
+      border: 1px solid var(--border2);
+    }
+
+    .btn-ghost:hover {
+      background: var(--card);
+      color: var(--text);
+    }
+
+    /* STATS */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin-top: -80px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .stat-card {
+      background: rgba(26, 35, 28, .7);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      backdrop-filter: blur(16px);
+
+      padding: 32px;
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      font-family: "Instrument Serif", serif;
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .stat-card h3 em {
+      color: var(--green);
+      font-style: normal;
+    }
+
+    .stat-card p {
+      color: var(--text3);
+      font-size: 14px;
+    }
+
+    /* TITLES */
+
+    .section-head {
+      text-align: center;
+      margin-bottom: 70px;
+    }
+
+    .label {
+      display: inline-block;
+      margin-bottom: 14px;
+
+      color: var(--green);
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .title {
+      font-family: "Instrument Serif", serif;
+      font-size: clamp(38px, 5vw, 60px);
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
+
+    .title em {
+      color: var(--green);
+      font-style: italic;
+    }
+
+    .subtitle {
+      max-width: 650px;
+      margin: auto;
+      color: var(--text2);
+      font-size: 16px;
+    }
+
+    /* ANALYZER */
+
+    #analyzer {
+      background: var(--bg2);
+    }
+
+    .analyzer-box {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 22px;
+      overflow: hidden;
+      max-width: 950px;
+      margin: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+    }
+
+    .analyzer-top {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+
+      border: none;
+      outline: none;
+
+      background: transparent;
+      color: var(--text);
+
+      font-family: "DM Sans", sans-serif;
+      font-size: 16px;
+      line-height: 1.8;
+
+      padding: 28px;
+    }
+
+    textarea::placeholder {
+      color: var(--text3);
+    }
+
+    .analyzer-footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .sample-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sample-wrap span {
+      color: var(--text3);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .samples {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--text2);
+
+      padding: 7px 14px;
+      border-radius: 999px;
+
+      cursor: pointer;
+      transition: .2s;
+      font-size: 13px;
+    }
+
+    .pill:hover {
+      background: var(--bg3);
+      color: var(--text);
+    }
+
+    .right-actions {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .char-count {
+      font-size: 13px;
+      color: var(--text3);
+    }
+
+    .analyze-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 13px 24px;
+
+      background: var(--green3);
+      color: #fff;
+
+      border: none;
+      border-radius: 12px;
+
+      cursor: pointer;
+      font-weight: 600;
+      transition: .25s;
+    }
+
+    .analyze-btn:hover {
+      background: var(--green2);
+      transform: translateY(-1px);
+    }
+
+    .results {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding: 28px;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text2);
+      font-size: 14px;
+    }
+
+    .ld {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: load .8s infinite ease-in-out;
+    }
+
+    .ld:nth-child(2) {
+      animation-delay: .1s;
+    }
+
+    .ld:nth-child(3) {
+      animation-delay: .2s;
+    }
+
+    @keyframes load {
+
+      0%,
+      100% {
+        opacity: .4;
+        transform: scale(.6);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .score-head {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .ring {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      border: 2px solid;
+    }
+
+    .ring strong {
+      font-size: 28px;
+      font-family: "Instrument Serif", serif;
+    }
+
+    .ring span {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .tone {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .desc {
+      color: var(--text2);
+      max-width: 600px;
+    }
+
+    .emotion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .emotion-card {
+      background: rgba(255, 255, 255, .03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .emotion-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .bar {
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .07);
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .5s ease;
+    }
+
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      border: 1px solid;
+    }
+
+    /* FEATURES */
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 30px;
+      transition: .3s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border2);
+    }
+
+    .icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .feature-card h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .feature-card p {
+      color: var(--text2);
+      font-size: 14px;
+    }
+
+    /* FOOTER */
+
+    footer {
+      padding: 50px 5vw;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    .footer-links a {
+      color: var(--text3);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .footer-links a:hover {
+      color: var(--text2);
+    }
+
+    .copy {
+      color: var(--text3);
+      font-size: 12px;
+    }
+
+    @media(max-width:768px) {
+
+      nav {
+        padding: 0 20px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      section {
+        padding: 90px 20px;
+      }
+
+      .hero {
+        min-height: auto;
+        padding-top: 150px;
+        padding-bottom: 120px;
+      }
+
+      .stats {
+        margin-top: 0;
+      }
+
+      .analyzer-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      footer {
+        justify-content: center;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+
+  <!-- NAV -->
+
+  <nav>
+    <a href="#" class="nav-logo">Senti<em>Scope</em></a>
+
+    <div class="nav-links">
+      <a href="#analyzer">Analyzer</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#analyzer" class="nav-btn">Try Free</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+
+  <section class="hero">
+    <div class="container">
+
+      <div class="badge">
+        <span></span>
+        AI-powered • Real-time • No signup required
+      </div>
+
+      <h1>
+        Understand the <br>
+        <em>emotion</em> behind <br>
+        every word
+      </h1>
+
+      <p>
+        SentiScope uses intelligent AI analysis to detect sentiment,
+        emotional tone, polarity, and key intent from any text in seconds.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#analyzer" class="btn btn-primary">
+          Analyze Text
+        </a>
+
+        <a href="#features" class="btn btn-ghost">
+          Explore Features
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- STATS -->
+
+  <section style="padding-top:0">
+    <div class="container">
+      <div class="stats">
+
+        <div class="stat-card">
+          <h3>99<em>%</em></h3>
+          <p>Accuracy Rate</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>2<em>M+</em></h3>
+          <p>Texts Analyzed</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>&lt;1<em>s</em></h3>
+          <p>Response Time</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>6</h3>
+          <p>Emotion Dimensions</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ANALYZER -->
+
+  <section id="analyzer">
+
+    <div class="container">
+
+      <div class="section-head">
+        <div class="label">Live Demo</div>
+
+        <h2 class="title">
+          Analyze text in <em>real time</em>
+        </h2>
+
+        <p class="subtitle">
+          Paste any review, message, tweet, support ticket,
+          article, or feedback and instantly understand its emotional tone.
+        </p>
+      </div>
+
+      <div class="analyzer-box">
+
+        <div class="analyzer-top">
+          <div class="dot" style="background:#ff5f57"></div>
+          <div class="dot" style="background:#febc2e"></div>
+          <div class="dot" style="background:#28c840"></div>
+
+          <span style="font-size:13px;color:var(--text3);margin-left:8px">
+            SentiScope AI Analyzer
+          </span>
+        </div>
+
+        <textarea id="text" placeholder="Paste or type text here..."></textarea>
+
+        <div class="analyzer-footer">
+
+          <div class="sample-wrap">
+
+            <span>Try sample text</span>
+
+            <div class="samples">
+
+              <button class="pill" onclick="loadSample(0)">
+                😊 Happy Review
+              </button>
+
+              <button class="pill" onclick="loadSample(1)">
+                😡 Complaint
+              </button>
+
+              <button class="pill" onclick="loadSample(2)">
+                📰 Neutral News
+              </button>
+
+              <button class="pill" onclick="loadSample(3)">
+                😤 Frustrated User
+              </button>
+
+            </div>
+          </div>
+
+          <div class="right-actions">
+
+            <div class="char-count">
+              <span id="charCount">0</span> chars
+            </div>
+
+            <button class="analyze-btn" onclick="runAnalysis()">
+              Analyze →
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="results" id="results"></div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+
+  <section id="features">
+
+    <div class="container">
+
+      <div class="section-head">
+
+        <div class="label">Capabilities</div>
+
+        <h2 class="title">
+          Built for <em>deep insight</em>
+        </h2>
+
+        <p class="subtitle">
+          Powerful AI-driven emotional analysis for products,
+          teams, support systems, and customer feedback pipelines.
+        </p>
+
+      </div>
+
+      <div class="feature-grid">
+
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(74,222,128,.12)">🎯</div>
+          <h3>Sentiment Scoring</h3>
+          <p>
+            Understand emotional polarity with accurate
+            sentiment scoring from −100 to +100.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(96,165,250,.12)">🧠</div>
+          <h3>Emotion Detection</h3>
+          <p>
+            Detect joy, anger, fear, sadness,
+            surprise, and trust with confidence metrics.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(251,191,36,.12)">⚡</div>
+          <h3>Real-time Analysis</h3>
+          <p>
+            Instant processing with blazing-fast
+            AI sentiment interpretation.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon" style="background:rgba(167,139,250,.12)">🔗</div>
+          <h3>API Ready</h3>
+          <p>
+            Connect SentiScope to dashboards,
+            apps, CRMs, and support workflows.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+
+  <footer>
+
+    <div class="nav-logo">
+      Senti<em>Scope</em>
+    </div>
+
+    <div class="footer-links">
+      <a href="#">Docs</a>
+      <a href="#">API</a>
+      <a href="#">Blog</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+
+    <div class="copy">
+      © 2026 SentiScope. All rights reserved.
+    </div>
+
+  </footer>
+
+  <script>
+
+    const textarea = document.getElementById("text");
+    const charCount = document.getElementById("charCount");
+    const results = document.getElementById("results");
+
+    const samples = [
+
+      `I absolutely loved this product! The quality exceeded my expectations and the support team was amazing. Highly recommended.`,
+
+      `Terrible experience. The package arrived broken and customer support ignored me for days. Complete waste of money.`,
+
+      `The committee announced that the annual report will be published next quarter after budget review.`,
+
+      `I am extremely frustrated with this service. Nobody could explain the issue and the wait time was ridiculous.`
+
+    ];
+
+    textarea.addEventListener("input", () => {
+      charCount.textContent = textarea.value.length;
+    });
+
+    function loadSample(index) {
+      textarea.value = samples[index];
+      charCount.textContent = textarea.value.length;
+    }
+
+    function getEmotionColor(name) {
+
+      const map = {
+        joy: "#4ade80",
+        sadness: "#a78bfa",
+        anger: "#f87171",
+        fear: "#f472b6",
+        surprise: "#fbbf24",
+        trust: "#60a5fa"
+      };
+
+      return map[name] || "#94a3b8";
+    }
+
+    function getTheme(score) {
+
+      if (score >= 60) {
+        return {
+          fg: "#4ade80",
+          border: "#4ade80",
+          bg: "rgba(74,222,128,.08)"
+        };
+      }
+
+      if (score >= 20) {
+        return {
+          fg: "#86efac",
+          border: "#86efac",
+          bg: "rgba(134,239,172,.08)"
+        };
+      }
+
+      if (score >= -20) {
+        return {
+          fg: "#94a3b8",
+          border: "#94a3b8",
+          bg: "rgba(148,163,184,.08)"
+        };
+      }
+
+      if (score >= -60) {
+        return {
+          fg: "#fbbf24",
+          border: "#fbbf24",
+          bg: "rgba(251,191,36,.08)"
+        };
+      }
+
+      return {
+        fg: "#f87171",
+        border: "#f87171",
+        bg: "rgba(248,113,113,.08)"
+      };
+    }
+
+    async function runAnalysis() {
+
+      const text = textarea.value.trim();
+
+      if (!text) {
+        alert("Please enter some text first.");
+        return;
+      }
+
+      results.style.display = "block";
+
+      results.innerHTML = `
+        <div class="loading">
+          <div class="ld"></div>
+          <div class="ld"></div>
+          <div class="ld"></div>
+          <span>Analyzing emotional tone...</span>
+        </div>
+      `;
+
+      try {
+
+        /* 
+          Replace this section with your real API endpoint.
+          Example backend response structure:
+        */
+
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        const mock = generateMockResult(text);
+
+        renderResults(mock);
+
+      } catch (error) {
+
+        console.error(error);
+
+        results.innerHTML = `
+          <div style="color:var(--red)">
+            Analysis failed. Please try again.
+          </div>
+        `;
+      }
+    }
+
+    function generateMockResult(text) {
+
+      const lower = text.toLowerCase();
+
+      let score = 0;
+
+      if (lower.includes("love") || lower.includes("amazing") || lower.includes("great")) {
+        score += 75;
+      }
+
+      if (lower.includes("terrible") || lower.includes("waste") || lower.includes("frustrated")) {
+        score -= 80;
+      }
+
+      if (score === 0) {
+        score = 5;
+      }
+
+      const positive = score > 20;
+
+      return {
+
+        score,
+
+        tone:
+          score > 60 ? "Very Positive" :
+            score > 20 ? "Positive" :
+              score > -20 ? "Neutral" :
+                score > -60 ? "Negative" :
+                  "Very Negative",
+
+        description:
+          positive
+            ? "The text expresses optimistic and emotionally positive language with strong approval."
+            : "The text contains emotionally negative language with frustration or dissatisfaction.",
+
+        emotions: {
+          joy: positive ? 82 : 12,
+          sadness: positive ? 8 : 70,
+          anger: positive ? 6 : 86,
+          fear: positive ? 12 : 42,
+          surprise: 40,
+          trust: positive ? 88 : 20
+        },
+
+        keywords:
+          positive
+            ? ["loved", "amazing", "highly recommended", "great quality"]
+            : ["terrible", "waste of money", "frustrated", "ignored"]
+
+      };
+    }
+
+    function renderResults(data) {
+
+      const theme = getTheme(data.score);
+
+      const emotions = Object.entries(data.emotions)
+        .sort((a, b) => b[1] - a[1]);
+
+      results.innerHTML = `
+
+        <div class="score-head">
+
+          <div
+            class="ring"
+            style="
+              background:${theme.bg};
+              border-color:${theme.border};
+            "
+          >
+            <strong style="color:${theme.fg}">
+              ${data.score > 0 ? "+" : ""}${data.score}
+            </strong>
+
+            <span style="color:${theme.fg}">
+              score
+            </span>
+          </div>
+
+          <div>
+
+            <div
+              class="tone"
+              style="color:${theme.fg}"
+            >
+              ${data.tone}
+            </div>
+
+            <div class="desc">
+              ${data.description}
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="emotion-grid">
+
+          ${emotions.map(([name, val]) => `
+
+            <div class="emotion-card">
+
+              <div class="emotion-top">
+
+                <div>
+                  ${name.charAt(0).toUpperCase() + name.slice(1)}
+                </div>
+
+                <div style="color:${getEmotionColor(name)}">
+                  ${val}%
+                </div>
+
+              </div>
+
+              <div class="bar">
+                <div
+                  class="fill"
+                  style="
+                    width:${val}%;
+                    background:${getEmotionColor(name)};
+                  "
+                ></div>
+              </div>
+
+            </div>
+
+          `).join("")}
+
+        </div>
+
+        <div class="keywords">
+
+          ${data.keywords.map(word => `
+
+            <div
+              class="tag"
+              style="
+                border-color:${theme.border};
+                color:${theme.fg};
+                background:${theme.bg};
+              "
+            >
+              ${word}
+            </div>
+
+          `).join("")}
+
+        </div>
+      `;
+    }
+
+  </script>
+
+</body>
+
+</html>
