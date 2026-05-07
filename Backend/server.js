@@ -1,96 +1,227 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import axios from "axios";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
 dotenv.config();
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+/* =========================
+   MIDDLEWARE
+========================= */
+
 app.use(cors());
 app.use(express.json());
 
+/* =========================
+   HOME ROUTE
+========================= */
+
 app.get("/", (req, res) => {
+
     res.json({
-        message: "SentiScope Backend Running 🚀"
+        success: true,
+        message: "SentiScope AI Backend Running 🚀"
     });
+
 });
+
+/* =========================
+   ANALYZE ROUTE
+========================= */
 
 app.post("/analyze", async (req, res) => {
 
-    const { text } = req.body;
+    try {
 
-    if (!text) {
-        return res.status(400).json({
-            error: "Text is required"
+        const { text } = req.body;
+
+        /* =========================
+           VALIDATION
+        ========================= */
+
+        if (!text || text.trim() === "") {
+
+            return res.status(400).json({
+                success: false,
+                error: "Text is required"
+            });
+
+        }
+
+        /* =========================
+           HUGGING FACE API CALL
+        ========================= */
+
+        const response = await axios.post(
+
+            "https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment",
+
+            {
+                inputs: text
+            },
+
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.HF_TOKEN}`,
+                    "Content-Type": "application/json"
+                }
+            }
+
+        );
+
+        /* =========================
+           AI RESULT
+        ========================= */
+
+        const prediction = response.data[0];
+
+        let best = prediction[0];
+
+        for (const item of prediction) {
+
+            if (item.score > best.score) {
+                best = item;
+            }
+
+        }
+
+        /* =========================
+           SENTIMENT LOGIC
+        ========================= */
+
+        let tone = "Neutral";
+        let score = 0;
+        let description = "";
+
+        if (best.label === "LABEL_2") {
+
+            tone = "Positive";
+            score = Math.round(best.score * 100);
+
+            description =
+                "The text expresses positive emotions and optimism.";
+
+        }
+
+        else if (best.label === "LABEL_0") {
+
+            tone = "Negative";
+            score = -Math.round(best.score * 100);
+
+            description =
+                "The text expresses negative emotions or dissatisfaction.";
+
+        }
+
+        else {
+
+            tone = "Neutral";
+            score = 0;
+
+            description =
+                "The text appears emotionally neutral.";
+
+        }
+
+        /* =========================
+           EMOTION ESTIMATION
+        ========================= */
+
+        const emotions = {
+
+            joy:
+                tone === "Positive"
+                    ? 85
+                    : tone === "Negative"
+                        ? 10
+                        : 40,
+
+            sadness:
+                tone === "Negative"
+                    ? 78
+                    : 15,
+
+            anger:
+                tone === "Negative"
+                    ? 72
+                    : 8,
+
+            fear:
+                tone === "Negative"
+                    ? 45
+                    : 18,
+
+            surprise: 35,
+
+            trust:
+                tone === "Positive"
+                    ? 88
+                    : 30
+        };
+
+        /* =========================
+           KEYWORDS
+        ========================= */
+
+        const keywords = text
+            .split(" ")
+            .filter(word => word.length > 3)
+            .slice(0, 5);
+
+        /* =========================
+           FINAL RESPONSE
+        ========================= */
+
+        res.json({
+
+            success: true,
+
+            tone,
+            score,
+            description,
+
+            emotions,
+
+            keywords,
+
+            ai: {
+                label: best.label,
+                confidence: `${Math.round(best.score * 100)}%`
+            }
+
         });
+
     }
 
-    const lower = text.toLowerCase();
+    catch (error) {
 
-    let score = 0;
+        console.error(
+            "AI ERROR:",
+            error.response?.data || error.message
+        );
 
-    if (
-        lower.includes("love") ||
-        lower.includes("good") ||
-        lower.includes("great") ||
-        lower.includes("amazing")
-    ) {
-        score += 75;
+        res.status(500).json({
+
+            success: false,
+
+            error:
+                "AI sentiment analysis failed"
+
+        });
+
     }
 
-    if (
-        lower.includes("terrible") ||
-        lower.includes("bad") ||
-        lower.includes("frustrated") ||
-        lower.includes("waste")
-    ) {
-        score -= 80;
-    }
-
-    if (score === 0) {
-        score = 5;
-    }
-
-    const positive = score > 20;
-
-    const result = {
-        score,
-
-        tone:
-            score > 60
-                ? "Very Positive"
-                : score > 20
-                    ? "Positive"
-                    : score > -20
-                        ? "Neutral"
-                        : score > -60
-                            ? "Negative"
-                            : "Very Negative",
-
-        description: positive
-            ? "The text expresses positive emotion."
-            : "The text expresses negative emotion.",
-
-        emotions: {
-            joy: positive ? 82 : 12,
-            sadness: positive ? 8 : 70,
-            anger: positive ? 6 : 86,
-            fear: positive ? 12 : 42,
-            surprise: 40,
-            trust: positive ? 88 : 20
-        },
-
-        keywords: positive
-            ? ["good", "great", "love"]
-            : ["bad", "terrible", "frustrated"]
-    };
-
-    res.json(result);
 });
 
+/* =========================
+   START SERVER
+========================= */
+
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+
+    console.log(`🚀 Server running on port ${PORT}`);
+
 });
