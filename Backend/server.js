@@ -20,12 +20,10 @@ app.use(express.json());
 ========================= */
 
 app.get("/", (req, res) => {
-
     res.json({
         success: true,
         message: "SentiScope AI Backend Running 🚀"
     });
-
 });
 
 /* =========================
@@ -56,8 +54,7 @@ app.post("/analyze", async (req, res) => {
         ========================= */
 
         const response = await axios.post(
-
-            "https://router.huggingface.co/hf-inference/models/cardiffnlp/twitter-roberta-base-sentiment"
+            "https://router.huggingface.co/hf-inference/models/cardiffnlp/twitter-roberta-base-sentiment",
 
             {
                 inputs: text
@@ -69,7 +66,6 @@ app.post("/analyze", async (req, res) => {
                     "Content-Type": "application/json"
                 }
             }
-
         );
 
         /* =========================
@@ -104,9 +100,7 @@ app.post("/analyze", async (req, res) => {
             description =
                 "The text expresses positive emotions and optimism.";
 
-        }
-
-        else if (best.label === "LABEL_0") {
+        } else if (best.label === "LABEL_0") {
 
             tone = "Negative";
             score = -Math.round(best.score * 100);
@@ -114,9 +108,7 @@ app.post("/analyze", async (req, res) => {
             description =
                 "The text expresses negative emotions or dissatisfaction.";
 
-        }
-
-        else {
+        } else {
 
             tone = "Neutral";
             score = 0;
@@ -194,9 +186,7 @@ app.post("/analyze", async (req, res) => {
 
         });
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "AI ERROR:",
@@ -206,9 +196,7 @@ app.post("/analyze", async (req, res) => {
         res.status(500).json({
 
             success: false,
-
-            error:
-                "AI sentiment analysis failed"
+            error: "AI sentiment analysis failed"
 
         });
 
